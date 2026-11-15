@@ -1,0 +1,2 @@
+"""BrandGuard Backend package."""
+
