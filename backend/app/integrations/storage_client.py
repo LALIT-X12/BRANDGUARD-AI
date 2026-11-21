@@ -16,7 +16,12 @@ class StorageClient:
             aws_access_key_id=settings.S3_ACCESS_KEY,
             aws_secret_access_key=settings.S3_SECRET_KEY.get_secret_value(),
             region_name=settings.S3_REGION,
-            config=Config(signature_version="s3v4"),
+            config=Config(
+                signature_version="s3v4",
+                connect_timeout=2,
+                read_timeout=3,
+                retries={"max_attempts": 1},
+            ),
         )
 
     def ensure_bucket(self) -> None:

@@ -1,7 +1,7 @@
 import asyncio
 import uuid
 
-from app.clients.claude_client import ClaudeClient, TokenUsage
+from app.clients.gemini_client import GeminiClient, TokenUsage
 from app.core.logging import get_logger
 from app.schemas.contracts import ReviewFinding, ReviewRequest, ReviewResponse, TokenUsageOut
 from app.services.checkers.semantic_checkers import build_default_checkers
@@ -37,7 +37,7 @@ def _merge_duplicate_and_conflicting_findings(findings: list[ReviewFinding]) -> 
 
 async def run_review_pipeline(
     *,
-    client: ClaudeClient,
+    client: GeminiClient,
     request: ReviewRequest,
 ) -> ReviewResponse:
     """Coordinate guideline interpretation, concurrent semantic checkers, and claim verification."""

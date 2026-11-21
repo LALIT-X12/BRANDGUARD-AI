@@ -13,3 +13,10 @@ node_modules/
 *.log
 .DS_Store
 Thumbs.db
+
+# Local backups and database dumps
+*.dump
+*.bak
+*.before-*
+frontend/.backup_*/
+frontend/.checkpoint_*/

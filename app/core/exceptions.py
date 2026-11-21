@@ -9,7 +9,7 @@ class BrandGuardAIError(Exception):
 
 
 class AIConfigurationError(BrandGuardAIError):
-    def __init__(self, message: str = "Anthropic API key is not configured") -> None:
+    def __init__(self, message: str = "AI provider API key is missing or unconfigured") -> None:
         super().__init__(message, status_code=500, error_code="AI_CONFIGURATION_ERROR")
 
 
@@ -24,11 +24,10 @@ class AIUpstreamTimeoutError(BrandGuardAIError):
 
 
 class MalformedAIResponseError(BrandGuardAIError):
-    def __init__(self, message: str = "Claude returned malformed or invalid JSON output") -> None:
+    def __init__(self, message: str = "AI provider returned malformed or invalid JSON output") -> None:
         super().__init__(message, status_code=502, error_code="MALFORMED_AI_RESPONSE")
 
 
 class ServiceAuthError(BrandGuardAIError):
     def __init__(self, message: str = "Invalid or missing service authentication token") -> None:
         super().__init__(message, status_code=401, error_code="SERVICE_UNAUTHORIZED")
-

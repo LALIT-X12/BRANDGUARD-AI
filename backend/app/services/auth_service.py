@@ -76,13 +76,21 @@ def register_user(
     if not tenant:
         raise NotFoundException("Tenant", payload.tenant_slug)
 
-    assigned_roles = payload.roles if allow_elevated_roles else [RoleName.CREATOR.value]
+    # Grant Brand Admin automatically to the first user registered in a newly created tenant
+    # so self-registered workspace founders can manage guidelines, claims, approvals, and analytics.
+    has_existing_user = db.scalar(select(User.id).where(User.tenant_id == tenant.id).limit(1))
     if not allow_elevated_roles and set(payload.roles) - {RoleName.CREATOR.value}:
         raise BrandGuardException(
             "Self-registration is restricted to the 'creator' role",
             status_code=403,
             error_code="FORBIDDEN_ROLE_ASSIGNMENT",
         )
+    if allow_elevated_roles:
+        assigned_roles = payload.roles
+    elif has_existing_user is None:
+        assigned_roles = [RoleName.BRAND_ADMIN.value]
+    else:
+        assigned_roles = [RoleName.CREATOR.value]
 
     existing = db.scalar(
         select(User).where(User.tenant_id == tenant.id, User.email == payload.email.lower())

@@ -2,7 +2,7 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-from app.clients.claude_client import ClaudeClient, TokenUsage
+from app.clients.gemini_client import GeminiClient, TokenUsage
 from app.prompts.validator_prompts import VALIDATOR_SYSTEM_PROMPT
 from app.schemas.contracts import TokenUsageOut, ValidationRequest, ValidationResponse
 from app.utils.prompt_safety import wrap_untrusted_content
@@ -20,7 +20,7 @@ class _ValidatorLLMOutput(BaseModel):
 
 async def validate_proposed_fix(
     *,
-    client: ClaudeClient,
+    client: GeminiClient,
     request: ValidationRequest,
     request_id: str,
 ) -> tuple[ValidationResponse, TokenUsage]:
@@ -42,7 +42,7 @@ async def validate_proposed_fix(
         system_prompt=VALIDATOR_SYSTEM_PROMPT,
         user_content=user_prompt,
         response_model=_ValidatorLLMOutput,
-        model=client.settings.CLAUDE_VALIDATOR_MODEL,
+        model=client.settings.GEMINI_VALIDATOR_MODEL,
         request_id=request_id,
         temperature=0.0,
     )

@@ -13,13 +13,13 @@ class _StubMongoStore:
 
 
 class FakeClaudeClient:
-    """Deterministic test double for ClaudeClient without external network calls."""
+    """Deterministic test double for GeminiClient without external network calls."""
 
     class _Settings:
-        CLAUDE_MODEL = "fake-claude"
-        CLAUDE_VALIDATOR_MODEL = "fake-claude-validator"
-        INPUT_TOKEN_COST_PER_1M = 3.0
-        OUTPUT_TOKEN_COST_PER_1M = 15.0
+        GEMINI_MODEL = "fake-gemini"
+        GEMINI_VALIDATOR_MODEL = "fake-gemini-validator"
+        INPUT_TOKEN_COST_PER_1M = 0.75
+        OUTPUT_TOKEN_COST_PER_1M = 3.75
 
     settings = _Settings()
 

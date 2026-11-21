@@ -1,7 +1,10 @@
+import os
+import tempfile
 import uuid
 
 from sqlalchemy.orm import Session
 
+from app.config import get_settings
 from app.integrations.redis_client import INGESTION_QUEUE, enqueue_job
 from app.integrations.storage_client import StorageClient
 from app.models.review import BackgroundJob
@@ -45,13 +48,29 @@ def ingest_submission(
 
     storage_key: str | None = None
     if file_bytes is not None:
-        safe_name = filename or f"upload.{content_format}"
+        safe_name = os.path.basename(filename or f"upload.{content_format}") or f"upload.{content_format}"
         storage_key = f"tenants/{tenant_id}/submissions/{submission.id}/v1/{safe_name}"
-        StorageClient().upload_bytes(
-            storage_key,
-            file_bytes,
-            content_type=mime_type or "application/octet-stream",
+        settings = get_settings()
+        is_local_s3 = (
+            "localhost" in settings.S3_ENDPOINT_URL or "127.0.0.1" in settings.S3_ENDPOINT_URL
         )
+        uploaded_remote = False
+        if not (settings.APP_ENV.lower() == "production" and is_local_s3):
+            try:
+                StorageClient().upload_bytes(
+                    storage_key,
+                    file_bytes,
+                    content_type=mime_type or "application/octet-stream",
+                )
+                uploaded_remote = True
+            except Exception:
+                uploaded_remote = False
+        if not uploaded_remote:
+            local_path = os.path.join(tempfile.gettempdir(), "brandguard_uploads", storage_key)
+            os.makedirs(os.path.dirname(local_path), exist_ok=True)
+            with open(local_path, "wb") as fp:
+                fp.write(file_bytes)
+            storage_key = f"local://{storage_key}"
         extracted_text = extract_text_from_bytes(file_bytes, content_format)
     else:
         extracted_text = raw_text or ""

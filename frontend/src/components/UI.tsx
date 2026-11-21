@@ -1,6 +1,6 @@
-import type {ReactNode} from 'react';import {Search,ChevronDown,Plus,ArrowUpRight,Inbox,AlertCircle,CheckCircle2,Clock3} from 'lucide-react';
+import type {CSSProperties, ReactNode} from 'react';import {Search,ChevronDown,Plus,ArrowUpRight,Inbox,AlertCircle,CheckCircle2,Clock3} from 'lucide-react';
 export function PageHeader({eyebrow,title,subtitle,action}:{eyebrow?:string;title:string;subtitle?:string;action?:ReactNode}){return <div className="page-head"><div>{eyebrow&&<div className="eyebrow">{eyebrow}</div>}<h1>{title}</h1>{subtitle&&<p>{subtitle}</p>}</div>{action}</div>}
-export function Card({children,className=''}:{children:ReactNode;className?:string}){return <section className={`surface-card ${className}`}>{children}</section>}
+export function Card({children,className='',style}:{children:ReactNode;className?:string;style?:CSSProperties}){return <section className={`surface-card ${className}`} style={style}>{children}</section>}
 export function StatCard({label,value,change,icon:Icon,tone='brown'}:{label:string;value:string|number;change?:string;icon:any;tone?:string}){return <Card className="stat-card"><div className={`stat-icon ${tone}`}><Icon size={19}/></div><div className="stat-label">{label}</div><div className="stat-value">{value}</div>{change&&<div className="stat-change">{change}</div>}</Card>}
 export function StatusPill({status}:{status:string}){const key=status.toLowerCase().replaceAll(' ','-');return <span className={`status-pill ${key}`}>{status}</span>}
 export function EmptyState({title,detail,action}:{title:string;detail:string;action?:ReactNode}){return <div className="empty-state"><span className="empty-icon"><Inbox size={22}/></span><h3>{title}</h3><p>{detail}</p>{action}</div>}

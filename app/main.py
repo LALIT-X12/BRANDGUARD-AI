@@ -1,11 +1,11 @@
 import uuid
 from typing import Any
-
+from contextlib import asynccontextmanager
 from fastapi import Depends, FastAPI, Header, Query, Request, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
-from app.clients.claude_client import ClaudeClient
+from app.clients.gemini_client import GeminiClient
 from app.clients.mongo_client import MongoDatasetStore
 from app.core.config import get_settings
 from app.core.exceptions import BrandGuardAIError, ServiceAuthError
@@ -27,8 +27,15 @@ from app.services.visual_reviewer import analyze_visual_asset
 from app.validators.fix_validator import validate_proposed_fix
 
 logger = get_logger(__name__)
-_claude_client = ClaudeClient()
+_gemini_client = GeminiClient()
 _mongo_store = MongoDatasetStore()
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    try:
+        yield
+    finally:
+        await _gemini_client.aclose()
+        await _mongo_store.close()
 
 
 class EvalCaseIn(BaseModel):
@@ -41,9 +48,9 @@ class EvalCaseIn(BaseModel):
     intent: str = "inform"
 
 
-def get_claude_client() -> ClaudeClient:
-    """Dependency provider for the shared ClaudeClient (overridable in tests)."""
-    return _claude_client
+def get_claude_client() -> GeminiClient:
+    """Dependency provider for the shared GeminiClient (overridable in tests)."""
+    return _gemini_client
 
 
 def get_mongo_store() -> MongoDatasetStore:
@@ -69,8 +76,8 @@ def create_app() -> FastAPI:
         title=settings.APP_NAME,
         version="0.1.0",
         docs_url="/docs" if settings.APP_ENV != "production" else None,
+        lifespan=lifespan,
     )
-
     @app.exception_handler(BrandGuardAIError)
     async def ai_error_handler(_request: Request, exc: BrandGuardAIError) -> JSONResponse:
         return JSONResponse(
@@ -91,7 +98,7 @@ def create_app() -> FastAPI:
         mongo_ok = await store.ping()
         return {
             "status": "ok",
-            "model": settings.CLAUDE_MODEL,
+            "model": settings.GEMINI_MODEL,
             "mongodb": "connected" if mongo_ok else "unavailable",
         }
 
@@ -99,7 +106,7 @@ def create_app() -> FastAPI:
     async def analyze_endpoint(
         payload: ReviewRequest,
         _auth: None = Depends(verify_service_token),
-        client: ClaudeClient = Depends(get_claude_client),
+        client: GeminiClient = Depends(get_claude_client),
     ) -> ReviewResponse:
         """Backend-compatible endpoint for semantic review & claim verification."""
         return await run_review_pipeline(client=client, request=payload)
@@ -108,7 +115,7 @@ def create_app() -> FastAPI:
     async def review_endpoint(
         payload: ReviewRequest,
         _auth: None = Depends(verify_service_token),
-        client: ClaudeClient = Depends(get_claude_client),
+        client: GeminiClient = Depends(get_claude_client),
     ) -> ResponseEnvelope[ReviewResponse]:
         """Canonical enveloped review endpoint."""
         req_id = payload.request_id or str(uuid.uuid4())
@@ -123,7 +130,7 @@ def create_app() -> FastAPI:
     async def generate_fix_endpoint(
         payload: FixRequest,
         _auth: None = Depends(verify_service_token),
-        client: ClaudeClient = Depends(get_claude_client),
+        client: GeminiClient = Depends(get_claude_client),
     ) -> FixResponse:
         """Generate a minimal-edit correction preserving creator intent."""
         resp, _ = await generate_minimal_fix(
@@ -135,7 +142,7 @@ def create_app() -> FastAPI:
     async def validate_fix_endpoint(
         payload: ValidationRequest,
         _auth: None = Depends(verify_service_token),
-        client: ClaudeClient = Depends(get_claude_client),
+        client: GeminiClient = Depends(get_claude_client),
     ) -> ValidationResponse:
         """Independently validate a proposed fix before presenting it as safe."""
         resp, _ = await validate_proposed_fix(
@@ -147,7 +154,7 @@ def create_app() -> FastAPI:
     async def visual_analyze_endpoint(
         payload: VisualAnalysisRequest,
         _auth: None = Depends(verify_service_token),
-        client: ClaudeClient = Depends(get_claude_client),
+        client: GeminiClient = Depends(get_claude_client),
     ) -> VisualAnalysisResponse:
         """Run multimodal brand visual assessment."""
         resp, _ = await analyze_visual_asset(

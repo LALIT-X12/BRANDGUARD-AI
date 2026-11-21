@@ -12,7 +12,14 @@ class Settings(BaseSettings):
     API_V1_PREFIX: str = "/api/v1"
 
     # API Gateway / Proxy / Security
-    CORS_ORIGINS: list[str] = Field(default_factory=lambda: ["http://localhost:3000"])
+    CORS_ORIGINS: list[str] = Field(
+        default_factory=lambda: [
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+            "http://localhost:4173",
+            "http://localhost:3000",
+        ]
+    )
     TRUSTED_HOSTS: list[str] = Field(default_factory=lambda: ["*"])
     RATE_LIMIT_REQUESTS_PER_MINUTE: int = 120
     MAX_UPLOAD_SIZE_BYTES: int = 10 * 1024 * 1024  # 10 MB

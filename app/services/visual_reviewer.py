@@ -3,7 +3,7 @@ from typing import Any
 
 import httpx
 
-from app.clients.claude_client import ClaudeClient, TokenUsage
+from app.clients.gemini_client import GeminiClient, TokenUsage
 from app.prompts.visual_prompts import VISUAL_REVIEW_SYSTEM_PROMPT
 from app.schemas.contracts import VisualAnalysisRequest, VisualAnalysisResponse
 
@@ -23,11 +23,11 @@ async def _resolve_image_base64(req: VisualAnalysisRequest) -> tuple[str, str]:
 
 async def analyze_visual_asset(
     *,
-    client: ClaudeClient,
+    client: GeminiClient,
     request: VisualAnalysisRequest,
     request_id: str,
 ) -> tuple[VisualAnalysisResponse, TokenUsage]:
-    """Perform multimodal Claude vision analysis on a creative asset."""
+    """Perform multimodal Gemini vision analysis on a creative asset."""
     image_b64, media_type = await _resolve_image_base64(request)
 
     rules_text = "\n".join(

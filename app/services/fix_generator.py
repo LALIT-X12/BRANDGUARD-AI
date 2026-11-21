@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from app.clients.claude_client import ClaudeClient, TokenUsage
+from app.clients.gemini_client import GeminiClient, TokenUsage
 from app.prompts.fix_prompts import FIX_GENERATOR_SYSTEM_PROMPT
 from app.schemas.contracts import FixRequest, FixResponse, TokenUsageOut
 from app.utils.prompt_safety import wrap_untrusted_content
@@ -14,7 +14,7 @@ class _FixGenerationLLMOutput(BaseModel):
 
 async def generate_minimal_fix(
     *,
-    client: ClaudeClient,
+    client: GeminiClient,
     request: FixRequest,
     request_id: str,
 ) -> tuple[FixResponse, TokenUsage]:

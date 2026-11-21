@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 
-from app.clients.claude_client import ClaudeClient, TokenUsage
+from app.clients.gemini_client import GeminiClient, TokenUsage
 from app.prompts.review_prompts import CHECKER_SPECS, CHECKER_SYSTEM_TEMPLATE
 from app.schemas.contracts import (
     ContentInput,
@@ -17,7 +17,7 @@ class CheckerOutput(BaseModel):
 
 
 class SemanticChecker:
-    """Reusable parameterized semantic checker backed by a single ClaudeClient."""
+    """Reusable parameterized semantic checker backed by a single GeminiClient."""
 
     def __init__(self, key: str, category_filters: list[str] | None = None) -> None:
         if key not in CHECKER_SPECS:
@@ -29,7 +29,7 @@ class SemanticChecker:
     async def run(
         self,
         *,
-        client: ClaudeClient,
+        client: GeminiClient,
         content: ContentInput,
         guidelines: InterpretedGuidelines,
         request_id: str,

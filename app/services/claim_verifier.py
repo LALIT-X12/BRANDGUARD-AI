@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 from pydantic import BaseModel, Field
 
-from app.clients.claude_client import ClaudeClient, TokenUsage
+from app.clients.gemini_client import GeminiClient, TokenUsage
 from app.prompts.claim_prompts import CLAIM_VERIFICATION_SYSTEM_PROMPT
 from app.schemas.contracts import (
     ClaimAssessment,
@@ -44,7 +44,7 @@ def _format_claims(claims: list[ClaimEvidence]) -> tuple[str, set[str], set[str]
 
 async def verify_claims(
     *,
-    client: ClaudeClient,
+    client: GeminiClient,
     content: ContentInput,
     claims: list[ClaimEvidence],
     request_id: str,

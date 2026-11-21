@@ -4,7 +4,6 @@ import uuid
 from dataclasses import dataclass
 from typing import Any, TypeVar
 
-import anthropic
 import httpx
 from pydantic import BaseModel, ValidationError
 from tenacity import (
@@ -71,9 +70,10 @@ class ClaudeClient:
 
     def __init__(self, settings: Settings | None = None) -> None:
         self.settings = settings or get_settings()
-        self._client: anthropic.AsyncAnthropic | None = None
+        self._client: Any | None = None
+    def _get_async_client(self) -> Any:
+        import anthropic
 
-    def _get_async_client(self) -> anthropic.AsyncAnthropic:
         api_key = self.settings.ANTHROPIC_API_KEY.get_secret_value()
         if not api_key or "replace-me" in api_key:
             raise AIConfigurationError("ANTHROPIC_API_KEY is missing or unconfigured")
@@ -152,6 +152,7 @@ class ClaudeClient:
         request_id: str,
         usage: TokenUsage,
     ) -> str:
+        import anthropic
         client = self._get_async_client()
 
         @retry(
